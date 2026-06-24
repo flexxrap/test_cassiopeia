@@ -13,7 +13,9 @@ def result():
 
 @pytest.fixture(scope="module")
 def root(result):
-    return ET.fromstring(result)
+    # result is a str with an XML encoding declaration, so it must be parsed
+    # as bytes (ET.fromstring rejects unicode strings that declare encoding).
+    return ET.fromstring(result.encode("utf-8"))
 
 
 @pytest.fixture(scope="module")
@@ -21,8 +23,13 @@ def offers(root):
     return {o.get("id"): o for o in root.findall(".//offer")}
 
 
+def test_returns_str_with_declaration(result):
+    assert isinstance(result, str)
+    assert result.startswith('<?xml version="1.0" encoding="UTF-8"?>')
+
+
 def test_valid_xml(result):
-    ET.fromstring(result)
+    ET.fromstring(result.encode("utf-8"))
 
 
 def test_only_expected_products(offers):
@@ -67,3 +74,35 @@ def test_special_characters_in_name(offers):
 
 def test_date_format(root):
     assert root.get("date") == "2026-06-18 12:00"
+
+
+def test_offer_url_and_currency(offers):
+    for offer_id, offer in offers.items():
+        url_el = offer.find("url")
+        assert url_el is not None
+        assert url_el.text == f"https://example.test/products/{offer_id}/"
+        currency_el = offer.find("currencyId")
+        assert currency_el is not None
+        assert currency_el.text == "RUB"
+
+
+def test_offer_picture_present(offers):
+    for offer in offers.values():
+        assert offer.find("picture") is not None
+
+
+def test_shop_header_fields(root):
+    shop = root.find("shop")
+    assert shop.find("name").text == "Test Shop"
+    assert shop.find("company").text == "Test Company"
+    assert shop.find("url").text == "https://example.test"
+    currency = shop.find("currencies/currency")
+    assert currency is not None
+    assert currency.get("id") == "RUB"
+    assert currency.get("rate") == "1"
+
+
+def test_shop_header_before_categories(root):
+    children = [child.tag for child in root.find("shop")]
+    assert children.index("name") < children.index("categories")
+    assert children.index("currencies") < children.index("categories")

@@ -162,6 +162,20 @@ def build_yml(products, categories, generated_at):
 
     shop = ET.SubElement(root, "shop")
 
+    shop_name_el = ET.SubElement(shop, "name")
+    shop_name_el.text = "Test Shop"
+
+    company_el = ET.SubElement(shop, "company")
+    company_el.text = "Test Company"
+
+    shop_url_el = ET.SubElement(shop, "url")
+    shop_url_el.text = "https://example.test"
+
+    currencies_el = ET.SubElement(shop, "currencies")
+    currency_el = ET.SubElement(currencies_el, "currency")
+    currency_el.set("id", "RUB")
+    currency_el.set("rate", "1")
+
     categories_el = ET.SubElement(shop, "categories")
     for cat_id in used_category_ids:
         cat = category_map[cat_id]
@@ -174,6 +188,10 @@ def build_yml(products, categories, generated_at):
         offer = ET.SubElement(offers_el, "offer")
         offer.set("id", str(product["id"]))
         offer.set("available", "true" if product["stock"] > 0 else "false")
+
+        slug = str(product["id"])
+        url_el = ET.SubElement(offer, "url")
+        url_el.text = f"https://example.test/products/{slug}/"
 
         name_el = ET.SubElement(offer, "name")
         name_el.text = product["name"]
@@ -193,6 +211,9 @@ def build_yml(products, categories, generated_at):
                 oldprice_el = ET.SubElement(offer, "oldprice")
                 oldprice_el.text = f"{old_price_val:.2f}"
 
+        currency_id_el = ET.SubElement(offer, "currencyId")
+        currency_id_el.text = "RUB"
+
         cat_id_el = ET.SubElement(offer, "categoryId")
         cat_id_el.text = str(product["category_id"])
 
@@ -204,9 +225,10 @@ def build_yml(products, categories, generated_at):
             desc_el = ET.SubElement(offer, "description")
             desc_el.text = desc
 
-    return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    xml_body = ET.tostring(root, encoding="unicode", xml_declaration=False)
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + xml_body
 
 
 if __name__ == "__main__":
     result = build_yml(PRODUCTS, CATEGORIES, datetime(2026, 6, 18, 12, 0))
-    print(result.decode("utf-8"))
+    print(result)
