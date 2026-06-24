@@ -6,5 +6,6 @@ from feed_task import CATEGORIES, PRODUCTS, build_yml
 
 
 def yml_feed(request):
-    xml_bytes = build_yml(PRODUCTS, CATEGORIES, datetime.now())
-    return HttpResponse(xml_bytes, content_type="application/xml; charset=utf-8")
+    """Отдаёт товарный YML-фид для Яндекс Директа."""
+    xml = build_yml(PRODUCTS, CATEGORIES, datetime.now())
+    return HttpResponse(xml, content_type="application/xml; charset=utf-8")

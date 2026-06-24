@@ -1,234 +1,225 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
+
 CATEGORIES = [
-    {"id": 1, "name": "Чай", "is_active": True},
-    {"id": 2, "name": "Кофе", "is_active": True},
-    {"id": 3, "name": "Неактивная", "is_active": False},
+    {
+        "id": 1,
+        "name": "Чай",
+        "is_active": True,
+    },
+    {
+        "id": 2,
+        "name": "Посуда",
+        "is_active": True,
+    },
+    {
+        "id": 3,
+        "name": "Подарочные наборы",
+        "is_active": False,
+    },
 ]
 
+
 PRODUCTS = [
-    # Проходит фильтр: активен, кат.1 активна, цена>0, картинка https, stock>0
-    # old_price(200) > price(150) => добавляем <oldprice>
     {
         "id": 101,
-        "category_id": 1,
         "name": 'Чай "Лес & травы" <сбор №1>',
-        "price": "150.00",
-        "old_price": "200.00",
-        "image_url": "https://example.com/tea.jpg",
+        "slug": "les-i-travy",
+        "category_id": 1,
+        "price": "490.00",
+        "old_price": "590.00",
+        "stock": 12,
+        "description": "Вкус: мята & чабрец > классический чай",
+        "image_url": "https://example.test/media/tea-101.jpg",
         "is_active": True,
-        "stock": 5,
-        "description": "Вкусный чай",
     },
-    # Проходит фильтр: stock=0 => available=false
-    # old_price(50) < price(100) => <oldprice> не добавляем
     {
         "id": 102,
-        "category_id": 1,
-        "name": "Чай чёрный",
-        "price": "100.00",
-        "old_price": "50.00",
-        "image_url": "https://example.com/black.jpg",
-        "is_active": True,
-        "stock": 0,
-        "description": "Чёрный чай",
-    },
-    # Проходит фильтр: картинка http://, description="" => <description> не добавляем
-    {
-        "id": 107,
+        "name": "Чайник стеклянный",
+        "slug": "glass-teapot",
         "category_id": 2,
-        "name": "Кофе молотый",
-        "price": "300.00",
-        "old_price": None,
-        "image_url": "http://example.com/coffee.jpg",
+        "price": "1500.00",
+        "old_price": "1400.00",
+        "stock": 0,
+        "description": "Стеклянный чайник объёмом 800 мл",
+        "image_url": "https://example.test/media/teapot-102.jpg",
         "is_active": True,
-        "stock": 10,
-        "description": "",
     },
-    # Отфильтрован: is_active=False
     {
         "id": 103,
-        "category_id": 1,
         "name": "Скрытый товар",
-        "price": "200.00",
+        "slug": "hidden-product",
+        "category_id": 1,
+        "price": "350.00",
         "old_price": None,
-        "image_url": "https://example.com/hidden.jpg",
-        "is_active": False,
         "stock": 5,
-        "description": "",
+        "description": "Товар отключён администратором",
+        "image_url": "https://example.test/media/product-103.jpg",
+        "is_active": False,
     },
-    # Отфильтрован: категория 3 неактивна
     {
         "id": 104,
-        "category_id": 3,
-        "name": "Товар в неактивной категории",
-        "price": "200.00",
-        "old_price": None,
-        "image_url": "https://example.com/inactive_cat.jpg",
-        "is_active": True,
-        "stock": 5,
-        "description": "",
-    },
-    # Отфильтрован: пустое имя
-    {
-        "id": 105,
+        "name": "Пробник чая",
+        "slug": "tea-sample",
         "category_id": 1,
-        "name": "",
-        "price": "200.00",
-        "old_price": None,
-        "image_url": "https://example.com/noname.jpg",
-        "is_active": True,
-        "stock": 5,
-        "description": "",
-    },
-    # Отфильтрован: price=0
-    {
-        "id": 106,
-        "category_id": 1,
-        "name": "Бесплатный",
         "price": "0.00",
         "old_price": None,
-        "image_url": "https://example.com/free.jpg",
+        "stock": 30,
+        "description": "Бесплатный пробник",
+        "image_url": "https://example.test/media/product-104.jpg",
         "is_active": True,
-        "stock": 5,
-        "description": "",
     },
-    # Отфильтрован: image_url=None
     {
-        "id": 108,
+        "id": 105,
+        "name": "Чашка фарфоровая",
+        "slug": "porcelain-cup",
         "category_id": 2,
-        "name": "Без картинки",
-        "price": "100.00",
-        "old_price": None,
+        "price": "700.00",
+        "old_price": "900.00",
+        "stock": 4,
+        "description": "Фарфоровая чашка",
         "image_url": None,
         "is_active": True,
-        "stock": 5,
-        "description": "",
     },
-    # Отфильтрован: image_url начинается с ftp://
     {
-        "id": 109,
-        "category_id": 2,
-        "name": "Плохая картинка",
-        "price": "100.00",
-        "old_price": None,
-        "image_url": "ftp://example.com/img.jpg",
+        "id": 106,
+        "name": "Подарочный набор",
+        "slug": "gift-set",
+        "category_id": 3,
+        "price": "2500.00",
+        "old_price": "3000.00",
+        "stock": 2,
+        "description": "Товар находится в неактивной категории",
+        "image_url": "https://example.test/media/product-106.jpg",
         "is_active": True,
-        "stock": 5,
+    },
+    {
+        "id": 107,
+        "name": "Чай улун молочный",
+        "slug": "milk-oolong",
+        "category_id": 1,
+        "price": "700.50",
+        "old_price": None,
+        "stock": 3,
         "description": "",
+        "image_url": "https://example.test/media/product-107.jpg",
+        "is_active": True,
     },
 ]
+
+
+def _format_date(generated_at):
+    """Привести дату генерации к формату YYYY-MM-DD hh:mm."""
+    if isinstance(generated_at, datetime):
+        return generated_at.strftime("%Y-%m-%d %H:%M")
+    return str(generated_at)
+
+
+def _has_valid_image(image_url):
+    return isinstance(image_url, str) and (
+        image_url.startswith("http://") or image_url.startswith("https://")
+    )
+
+
+def _parse_price(value):
+    """Вернуть float цены либо None, если значение некорректно."""
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _is_product_allowed(product, category_map):
+    """Товар проходит в фид, только если выполнены ВСЕ условия."""
+    if not product.get("is_active"):
+        return False
+
+    category = category_map.get(product.get("category_id"))
+    if category is None or not category.get("is_active"):
+        return False
+
+    if not product.get("name"):
+        return False
+
+    price = _parse_price(product.get("price"))
+    if price is None or price <= 0:
+        return False
+
+    if not _has_valid_image(product.get("image_url")):
+        return False
+
+    return True
 
 
 def build_yml(products, categories, generated_at):
-    if isinstance(generated_at, datetime):
-        date_str = generated_at.strftime("%Y-%m-%d %H:%M")
-    else:
-        date_str = str(generated_at)
+    category_map = {category["id"]: category for category in categories}
 
-    category_map = {cat["id"]: cat for cat in categories}
+    selected = [
+        product
+        for product in products
+        if _is_product_allowed(product, category_map)
+    ]
+    selected.sort(key=lambda product: product["id"])
 
-    filtered_products = []
-    for product in products:
-        if not product["is_active"]:
-            continue
-        cat = category_map.get(product["category_id"])
-        if not cat or not cat["is_active"]:
-            continue
-        if not product["name"]:
-            continue
-        try:
-            price_val = float(product["price"])
-        except (ValueError, TypeError):
-            continue
-        if price_val <= 0:
-            continue
-        if product["image_url"] is None:
-            continue
-        if not (
-            product["image_url"].startswith("http://")
-            or product["image_url"].startswith("https://")
-        ):
-            continue
-        filtered_products.append(product)
+    used_category_ids = sorted({product["category_id"] for product in selected})
 
-    filtered_products.sort(key=lambda p: p["id"])
-
-    used_category_ids = sorted({p["category_id"] for p in filtered_products})
-
-    root = ET.Element("yml_catalog")
-    root.set("date", date_str)
-
+    root = ET.Element("yml_catalog", {"date": _format_date(generated_at)})
     shop = ET.SubElement(root, "shop")
 
-    shop_name_el = ET.SubElement(shop, "name")
-    shop_name_el.text = "Test Shop"
+    ET.SubElement(shop, "name").text = "Test Shop"
+    ET.SubElement(shop, "company").text = "Test Company"
+    ET.SubElement(shop, "url").text = "https://example.test"
 
-    company_el = ET.SubElement(shop, "company")
-    company_el.text = "Test Company"
-
-    shop_url_el = ET.SubElement(shop, "url")
-    shop_url_el.text = "https://example.test"
-
-    currencies_el = ET.SubElement(shop, "currencies")
-    currency_el = ET.SubElement(currencies_el, "currency")
-    currency_el.set("id", "RUB")
-    currency_el.set("rate", "1")
+    currencies = ET.SubElement(shop, "currencies")
+    ET.SubElement(currencies, "currency", {"id": "RUB", "rate": "1"})
 
     categories_el = ET.SubElement(shop, "categories")
-    for cat_id in used_category_ids:
-        cat = category_map[cat_id]
-        cat_el = ET.SubElement(categories_el, "category")
-        cat_el.set("id", str(cat["id"]))
-        cat_el.text = cat["name"]
+    for category_id in used_category_ids:
+        category = category_map[category_id]
+        category_el = ET.SubElement(
+            categories_el, "category", {"id": str(category["id"])}
+        )
+        category_el.text = category["name"]
 
     offers_el = ET.SubElement(shop, "offers")
-    for product in filtered_products:
-        offer = ET.SubElement(offers_el, "offer")
-        offer.set("id", str(product["id"]))
-        offer.set("available", "true" if product["stock"] > 0 else "false")
+    for product in selected:
+        available = "true" if product["stock"] > 0 else "false"
+        offer = ET.SubElement(
+            offers_el,
+            "offer",
+            {"id": str(product["id"]), "available": available},
+        )
 
-        slug = str(product["id"])
-        url_el = ET.SubElement(offer, "url")
-        url_el.text = f"https://example.test/products/{slug}/"
+        ET.SubElement(offer, "url").text = (
+            f'https://example.test/products/{product["slug"]}/'
+        )
 
-        name_el = ET.SubElement(offer, "name")
-        name_el.text = product["name"]
+        price = _parse_price(product["price"])
+        ET.SubElement(offer, "price").text = f"{price:.2f}"
 
-        price_el = ET.SubElement(offer, "price")
-        price_el.text = f"{float(product['price']):.2f}"
+        old_price = _parse_price(product.get("old_price"))
+        if old_price is not None and old_price > 0 and old_price > price:
+            ET.SubElement(offer, "oldprice").text = f"{old_price:.2f}"
 
-        old_price = product.get("old_price")
-        if old_price is not None:
-            try:
-                old_price_val = float(old_price)
-                cur_price_val = float(product["price"])
-            except (ValueError, TypeError):
-                old_price_val = 0.0
-                cur_price_val = 0.0
-            if old_price_val > 0 and old_price_val > cur_price_val:
-                oldprice_el = ET.SubElement(offer, "oldprice")
-                oldprice_el.text = f"{old_price_val:.2f}"
+        ET.SubElement(offer, "currencyId").text = "RUB"
+        ET.SubElement(offer, "categoryId").text = str(product["category_id"])
+        ET.SubElement(offer, "picture").text = product["image_url"]
+        ET.SubElement(offer, "name").text = product["name"]
 
-        currency_id_el = ET.SubElement(offer, "currencyId")
-        currency_id_el.text = "RUB"
-
-        cat_id_el = ET.SubElement(offer, "categoryId")
-        cat_id_el.text = str(product["category_id"])
-
-        picture_el = ET.SubElement(offer, "picture")
-        picture_el.text = product["image_url"]
-
-        desc = product.get("description", "")
-        if desc:
-            desc_el = ET.SubElement(offer, "description")
-            desc_el.text = desc
+        description = product.get("description")
+        if description:
+            ET.SubElement(offer, "description").text = description
 
     xml_body = ET.tostring(root, encoding="unicode", xml_declaration=False)
     return '<?xml version="1.0" encoding="UTF-8"?>\n' + xml_body
 
 
 if __name__ == "__main__":
-    result = build_yml(PRODUCTS, CATEGORIES, datetime(2026, 6, 18, 12, 0))
+    result = build_yml(
+        products=PRODUCTS,
+        categories=CATEGORIES,
+        generated_at=datetime(2026, 6, 18, 12, 0),
+    )
+
     print(result)
